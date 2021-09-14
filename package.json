@@ -1,6 +1,6 @@
 {
   "name": "kiwrious-webserial",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "kiwrious sensor connector for web applications",
   "module": "lib",
   "scripts": {
@@ -29,5 +29,7 @@
   "devDependencies": {
     "@types/node": "^16.9.1"
   },
-  "files": ["lib"]
+  "files": [
+    "lib"
+  ]
 }
