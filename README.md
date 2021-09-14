@@ -35,12 +35,16 @@ serialService.onSerialData = (decodedData: SensorReadResult) => {
 }
 ```
 
-## kiwrious serial api
-read sensor values
+## API
+
+* read sensor values
 `onSerialData?: (data: SensorReadResult) => void;`
-check connectivity
+
+* check connectivity
 `onSerialConnection?: (connect: boolean) => void;`
-connect and read
+
+* connect and read
 `connectAndReadAsync(): Promise<void>;`
-disconnect sensor
+
+* disconnect sensor
 `triggerStopReading(): void;`
