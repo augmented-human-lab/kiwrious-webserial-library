@@ -1,5 +1,6 @@
 ## publish guide
 
-1. `tsc`
-2. `npm pack`
-3. `npm publish`
+1. `npm version patch`
+2. `tsc`
+3. `npm pack`
+4. `npm publish`
