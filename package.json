@@ -2,7 +2,7 @@
   "name": "kiwrious-webserial",
   "version": "1.0.6",
   "description": "kiwrious sensor connector for web applications",
-  "module": "dist",
+  "module": "lib",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
