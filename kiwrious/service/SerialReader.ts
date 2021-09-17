@@ -33,7 +33,6 @@ export class SerialReader {
       throw new RangeError('reader disconnected.');
     }
     this._buffer = SerialReader.concatArray(this._buffer, value);
-    this._log('added to array. length:', value.length, this._buffer.length);
   }
 
   private async _locateHeader() {
@@ -73,7 +72,6 @@ export class SerialReader {
         /* Extract the packet from buffer */
         const value = new SerialRawValue(this._buffer.subarray(0, EXPECTED_PACKET_SIZE));
         this._buffer = this._buffer.subarray(EXPECTED_PACKET_SIZE);
-        this._log('reading meta', value.header2Bytes, value.footer2Bytes, value.rawValue.length, value.sensorTypeRaw);
         return value;
       }
 

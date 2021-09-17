@@ -80,7 +80,6 @@ export class VOCSerialDecoder extends SerialDecoder {
   }
 
   private runOneInterval () {
-    this._log('interval', this._dataReadyPercentage);
 
     if(this._dataReadyPercentage >= MAX_PERCENTAGE){
       this.clearIntervalIfRunning();
