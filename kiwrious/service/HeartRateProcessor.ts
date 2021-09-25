@@ -241,7 +241,7 @@ export class HeartRateProcessor {
             return null;
         }
 
-        return this._resultArray.average;
+        return Math.round(this._resultArray.average);
     }
 
     private _process(inputArray: FixedArray): number {
