@@ -1,35 +1,37 @@
 {
-  "name": "kiwrious-webserial",
-  "version": "1.0.14",
-  "description": "kiwrious sensor connector for web applications",
-  "module": "lib",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/augmented-human-lab/kiwrious-webserial-library.git"
-  },
-  "keywords": [
-    "kiwrious",
-    "webserial",
-    "serial",
-    "typescript"
-  ],
-  "author": "augmented human lab",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/augmented-human-lab/kiwrious-webserial-library/issues"
-  },
-  "homepage": "https://github.com/augmented-human-lab/kiwrious-webserial-library#readme",
-  "dependencies": {
-    "jsfft": "0.0.4",
-    "typescript": "^4.4.3"
-  },
-  "devDependencies": {
-    "@types/node": "^16.9.1"
-  },
-  "files": [
-    "lib"
-  ]
+    "name": "kiwrious-webserial",
+    "version": "1.0.14",
+    "description": "kiwrious sensor connector for web applications",
+    "module": "lib",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "prepublish": "tsc npm pack",
+        "postpublish": "npm verison patch"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/augmented-human-lab/kiwrious-webserial-library.git"
+    },
+    "keywords": [
+        "kiwrious",
+        "webserial",
+        "serial",
+        "typescript"
+    ],
+    "author": "augmented human lab",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/augmented-human-lab/kiwrious-webserial-library/issues"
+    },
+    "homepage": "https://github.com/augmented-human-lab/kiwrious-webserial-library#readme",
+    "dependencies": {
+        "jsfft": "0.0.4",
+        "typescript": "^4.4.3"
+    },
+    "devDependencies": {
+        "@types/node": "^16.9.1"
+    },
+    "files": [
+        "lib"
+    ]
 }
