@@ -7,17 +7,17 @@ export class SerialUtil {
     return c;
   }
 
-  
+
   static concatMultiArrays(arrays: Uint8Array[]): Uint8Array {
-    const totalLen = arrays.reduce((a, c) =>{
-        return a + c.length;
+    const totalLen = arrays.reduce((a, c) => {
+      return a + c.length;
     }, 0);
 
     const result = new Uint8Array(totalLen);
 
     arrays.reduce((a, c) => {
-        result.set(c, a);
-        return a + c.length;
+      result.set(c, a);
+      return a + c.length;
     }, 0);
 
     return result;

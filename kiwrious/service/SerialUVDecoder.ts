@@ -13,7 +13,12 @@ export class UVSerialDecoder extends SerialDecoder {
         console.log('|UVSerialDecoder|', ...msg);
     }
 
-    decode(rawValue: SerialRawValue): SensorReadResult|null {
+    async decode(rawValues: SerialRawValue[]): Promise<SensorReadResult | null> {
+        if (!rawValues.length) {
+            throw new Error('invlalid input. expected 1 value at least')
+        }
+
+        const rawValue = rawValues[0];
 
         const data0f = rawValue.getFourBytesFloatByIndex(6).toFixed(0);
         const data1f = rawValue.getFourBytesFloatByIndex(10).toFixed(1);

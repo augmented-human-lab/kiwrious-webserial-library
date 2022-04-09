@@ -4,14 +4,16 @@ import { SerialRawValue } from "./SerialRawValue";
 
 export abstract class SerialDecoder {
 
-    protected _log(...msg: any) {
-        console.log('|SerialDecoder|', ...msg);
+    constructor() {
     }
 
-    protected _err(...msg: any) {
+    _log(...msg: any) {
+        console.log('|SerialDecoder|', ...msg);
+    }
+    _err(...msg: any) {
         console.error("|SerialDecoder|", ...msg);
     }
 
-    abstract decode(rawValue: SerialRawValue): SensorReadResult|null;
+    abstract decode(rawValue: SerialRawValue[]): Promise<SensorReadResult | null>;
 }
 

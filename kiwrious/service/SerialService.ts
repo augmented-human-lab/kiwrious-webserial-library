@@ -1,4 +1,3 @@
-import { SerialDecoder } from "./SerialDecoder";
 import { SensorReadResult } from "../data/SensorReadResult";
 import { SerialReader } from "./SerialReader";
 import { SerialDecoderFactory } from "./SerialDecoderFactory";
@@ -6,11 +5,16 @@ import { SerialDecoderFactory } from "./SerialDecoderFactory";
 class SerialService {
     public onSerialData?: (data: SensorReadResult) => void;
     public onSerialConnection?: (connect: boolean) => void;
+    public onFirmwareUpdateAvailable?: (outdated: boolean) => void;
 
     private _isConnected: boolean = false;
     private _isReading: boolean = false;
     private _port: any;  //TODO: TYPE
     private _reader: any;
+
+    constructor() {
+        this._log('ctor');
+    }
 
     private _log(...msg: any) {
         console.log('|SerialService|', ...msg);
@@ -45,17 +49,14 @@ class SerialService {
 
         this.triggerStopReading();
 
-
         this._log('cancelling..');
-        this._reader.cancel(); /* Todo: uncaught exception when the sensor is suddenly unplugged */
+        this._reader.cancel();
 
         this._log('releasing lock..');
         this._reader.releaseLock();
 
         this._reader = null;
         this._log('reader closed');
-
-
     }
 
     private async closePortAsync() {
@@ -71,7 +72,7 @@ class SerialService {
             await this._port.close();
             this._log('port closed');
         }
-        catch(e) {
+        catch (e) {
             this._err('failed to close port', e);
         }
         // DO NOT UNCOMMECNT THE NEXT LINE. We keep a reference to the port so we can reuse it later
@@ -81,6 +82,7 @@ class SerialService {
         if (this.onSerialConnection) {
             this.onSerialConnection(this._isConnected);
         }
+
     }
 
     public async resumeReading() {
@@ -131,10 +133,12 @@ class SerialService {
         };
         serial.ondisconnect = async () => {
             this._log('serial disconnect');
+
             await this.disconnectAsync();
 
             this._port = null;
         };
+
 
         this._log('requesting port..');
         const port = await serial
@@ -191,7 +195,7 @@ class SerialService {
 
         this._log('openning port..');
         await port
-            .open({ baudrate: 115200, baudRate: 115200 })
+            .open({ baudrate: 230400, baudRate: 230400 })
             .catch((e: Error) => {
                 this._err(`failed to port.open`, e);
             });
@@ -207,7 +211,6 @@ class SerialService {
             return null;
         }
 
-
         return { port, reader };
     }
 
@@ -218,27 +221,35 @@ class SerialService {
 
             this._log('creating decoder..');
             const serialValueForDecoder = await serialReader.readOnce();
-            const decoderSensorType = serialValueForDecoder.sensorType;
 
-            const decoder = SerialDecoderFactory.createDecoder(decoderSensorType);
+            if (this.onFirmwareUpdateAvailable) {
+                this.onFirmwareUpdateAvailable(serialValueForDecoder.isFirmwareOutdated);
+                this._warn(`New firmware available ? ${serialValueForDecoder.isFirmwareOutdated}`);
+            }
+
+            const decoderType = serialValueForDecoder.decoderType;
+            const sensorType = serialValueForDecoder.sensorType;
+
+            const valueReader = SerialDecoderFactory.createReader(decoderType);
+            const decoder = SerialDecoderFactory.createDecoder(decoderType);
 
             this._log('starting loop..');
             this._isReading = true;
 
             while (this._isReading) {
-              const serialValue = await serialReader.readOnce();
-              const decodedValues = decoder.decode(serialValue);
+                const serialValues = await valueReader.readValue(serialReader);
+                const decodedValues = await decoder.decode(serialValues);
 
-              if (decodedValues) {
-                if (decoderSensorType !== decodedValues.sensorType) {
-                  this._err(`invalid sensor type. expecting ${decoderSensorType}, but got ${decodedValues.sensorType}. values: ${serialValue.rawValue}`);
-                  continue;
-                }
+                if (decodedValues) {
+                    if (sensorType !== decodedValues.sensorType) {
+                        this._err(`invalid sensor type. expecting ${sensorType}, but got ${decodedValues.sensorType}.`);
+                        continue;
+                    }
 
-                if ( this.onSerialData) {
-                  this.onSerialData(decodedValues);
+                    if (this.onSerialData) {
+                        this.onSerialData(decodedValues);
+                    }
                 }
-              }
             }
 
             this._log('loop complete..');
@@ -251,7 +262,6 @@ class SerialService {
             this._log('startReading complete');
         }
     }
-
 }
 
 const singletonInstance = new SerialService();

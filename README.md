@@ -15,6 +15,13 @@
 <script type="text/javascript" src="js/heartrate.js"></script>
 ```
 
+### Configure webpack
+```javascript
+resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
+}
+```
+    
 ## Import
 ```typescript
 import serialService from 'kiwrious-webserial/lib/service/SerialService';

@@ -1,7 +1,8 @@
-import {SensorDecodedValue} from "../data/SensorDecodedValue";
-import {SensorReadResult} from "../data/SensorReadResult";
-import {SerialDecoder} from "./SerialDecoder";
-import {SENSOR_VALUE, SerialRawValue} from "./SerialRawValue";
+import { SensorDecodedValue } from "../data/SensorDecodedValue";
+import { SensorReadResult } from "../data/SensorReadResult";
+import { SerialDecoder } from "./SerialDecoder";
+import { SENSOR_VALUE, SerialRawValue } from "./SerialRawValue";
+import Timeout = NodeJS.Timeout;
 
 const MAX_MS_WAIT_FOR_DATA_READY: number = 20000;
 const INTERVAL_MS = 1000;
@@ -11,7 +12,7 @@ export class VOCSerialDecoder extends SerialDecoder {
 
   private _hasStartedWaitingForData: boolean = false;
   private _dataReadyPercentage: number = 0;
-  private _dataReadyIntervalId: any;
+  private _dataReadyIntervalId: Timeout | undefined;
   private _incrementPercentage: number;
 
   constructor() {
@@ -20,11 +21,13 @@ export class VOCSerialDecoder extends SerialDecoder {
     this._incrementPercentage = INTERVAL_MS * MAX_PERCENTAGE / MAX_MS_WAIT_FOR_DATA_READY;
   }
 
-  protected _log(...msg: any) {
-    console.log('|VOCSerialDecoder|', ...msg);
-  }
+  async decode(rawValues: SerialRawValue[]): Promise<SensorReadResult | null> {
+    if (!rawValues.length) {
+      throw new Error('invlalid input. expected 1 value at least')
+    }
 
-  decode(rawValue: SerialRawValue): SensorReadResult | null {
+    const rawValue = rawValues[0];
+
     if (!rawValue.isValidLength) {
       this._log(`invalid length ${rawValue.rawValue.length}. skipping..`);
       return null;
@@ -41,12 +44,12 @@ export class VOCSerialDecoder extends SerialDecoder {
     }
 
     const data: VocResult = {
-      status: this._dataReadyPercentage !== MAX_PERCENTAGE? VOC_RESULT_STATUS.PROCESSING: VOC_RESULT_STATUS.READY,
+      status: this._dataReadyPercentage !== MAX_PERCENTAGE ? VOC_RESULT_STATUS.PROCESSING : VOC_RESULT_STATUS.READY,
       dataReadyPercentage: this._dataReadyPercentage,
       value: data0f
     }
 
-    const value0: SensorDecodedValue = {label: SENSOR_VALUE.VOC, value: data, type: "object"};
+    const value0: SensorDecodedValue = { label: SENSOR_VALUE.VOC, value: data, type: "object" };
 
     const result: SensorReadResult = {
       sensorType: rawValue.sensorType,
@@ -79,9 +82,9 @@ export class VOCSerialDecoder extends SerialDecoder {
     this._hasStartedWaitingForData = true;
   }
 
-  private runOneInterval () {
+  private runOneInterval() {
 
-    if(this._dataReadyPercentage >= MAX_PERCENTAGE){
+    if (this._dataReadyPercentage >= MAX_PERCENTAGE) {
       this.clearIntervalIfRunning();
       return;
     }

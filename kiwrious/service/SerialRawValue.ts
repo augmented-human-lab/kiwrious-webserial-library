@@ -3,10 +3,12 @@ import { SerialHexValue } from "./SerialHexValue";
 export const SENSOR_TYPE = {
     UNKNOWN: 'UNKNOWN',
     UV: 'UV',
+    UV2: 'UV2',
     HUMIDITY: 'HUMIDITY',
     VOC: 'VOC',
     CONDUCTIVITY: 'CONDUCTIVITY',
     HEART_RATE: 'HEART_RATE',
+    HEART_RATE2: 'HEART_RATE2',
     TEMPERATURE: 'TEMPERATURE',
     TEMPERATURE2: 'TEMPERATURE2',
     // TODO: other sensor types
@@ -24,6 +26,16 @@ export const SENSOR_VALUE = {
     INFRARED_TEMPERATURE: 'InfraredTemp',
     AMBIENT_TEMPERATURE: 'AmbientTemp',
 }
+
+// sensor version = undefined indicates sensor is having the initial firmware
+export const LATEST_SENSOR_VERSION = new Map([
+    ['UV', 2],
+    ['HUMIDITY', undefined],
+    ['VOC', undefined],
+    ['CONDUCTIVITY', undefined],
+    ['HEART_RATE', 2],
+    ['TEMPERATURE', 2]
+]);
 
 export class SerialRawValue {
     rawValue: Uint8Array;
@@ -58,7 +70,7 @@ export class SerialRawValue {
         return this.getTwoBytesByIndex(24);
     }
 
-    get sensorType(): string {
+    get decoderType(): string {
         switch (this.sensorTypeRaw) {
             case 1: return SENSOR_TYPE.UV;
             case 2: return SENSOR_TYPE.TEMPERATURE;
@@ -67,11 +79,27 @@ export class SerialRawValue {
             case 6: return SENSOR_TYPE.VOC;
             case 7: return SENSOR_TYPE.HUMIDITY;
             case 9: return SENSOR_TYPE.TEMPERATURE2;
+
+            // updated firmware sensor
+            case 10: return SENSOR_TYPE.HEART_RATE2;
+            case 11: return SENSOR_TYPE.UV2;
             // TODO OTHER SENSORS
 
             default:
                 throw new Error(`invalid sensor type ${this.sensorTypeRaw}`)
         }
+    }
+
+    get isFirmwareOutdated(): boolean {
+        const regex = /\d$/gm;
+        let currentSensorVersion = this.decoderType.match(regex)?.toString();
+        return currentSensorVersion != LATEST_SENSOR_VERSION.get(this.sensorType);
+    }
+
+    get sensorType(): string {
+        const regex = /\d$/gm;
+        const sensorName = this.decoderType.replace(regex, '');
+        return sensorName;
     }
 
     // For humidity and temp sensor
@@ -82,9 +110,9 @@ export class SerialRawValue {
     }
 
     getTwoBytesUnsignedByIndex(index: number): number {
-      const value = this.dataView.getUint16(index, true);
+        const value = this.dataView.getUint16(index, true);
 
-      return value;
+        return value;
     }
 
     getTwoBytesByIndex(index: number): number {
@@ -105,11 +133,11 @@ export class SerialRawValue {
 
 
     sliceBytes(index: number, numberOfBytes: number): Uint8Array {
-        if (index+numberOfBytes > this.rawValue.length) {
+        if (index + numberOfBytes > this.rawValue.length) {
             throw new Error(`invalid index [${index}] for array length [${this.rawValue.length}]`);
         }
 
-        const sliced = this.rawValue.slice(index, index+numberOfBytes);
+        const sliced = this.rawValue.slice(index, index + numberOfBytes);
 
         return sliced;
     }

@@ -1,17 +1,15 @@
 import { SerialRawValue } from "./SerialRawValue";
+import { SerialUtil } from "./SerialUtil";
 
-const EXPECTED_PACKET_SIZE = 26;
-const PACKET_HEADER_BYTE = 0x0a;
-const PACKET_FOOTER_BYTE = 0x0b;
-const MAX_RETRY_TIME = 4096;
+const EXPECTED_ARRAY_SIZE = 26;
 
 export class SerialReader {
-  private _buffer: Uint8Array;
+  private _array: Uint8Array;
   private readonly _reader: ReadableStreamDefaultReader;
 
   constructor(reader: ReadableStreamDefaultReader) {
     this._reader = reader;
-    this._buffer = new Uint8Array();
+    this._array = new Uint8Array();
   }
 
   _log(...msg: any) {
@@ -22,72 +20,68 @@ export class SerialReader {
     console.error('|SerialReader|', ...msg);
   }
 
-  private async _readDataToBuffer() {
+  private async _read(): Promise<SerialRawValue> {
+
+    //If we have enough in the array use that don't read...
+    if (this._array.length >= EXPECTED_ARRAY_SIZE) {
+      const spliced = this._array.subarray(0, EXPECTED_ARRAY_SIZE);
+      this._array = this._array.subarray(EXPECTED_ARRAY_SIZE);
+      //this._log('reading from array..', this._array.length, spliced.length);
+
+      return new SerialRawValue(spliced);
+    }
+
+    if (!this._reader) {
+      this._err('readLoop - no reader. returning');
+      throw new Error('no reader');
+    }
 
     //read data from reader
     const readInstance = await this._reader.read();
     const { value, done } = readInstance;
 
     if (done) {
-      this._log("[_readDataToBuffer] DONE", done);
-      throw new RangeError('reader disconnected.');
+      //this._log("[readOnce] DONE", done);
+      throw new Error('reader done');
     }
-    this._buffer = SerialReader.concatArray(this._buffer, value);
+
+    //this._log('reading length', value.length);
+
+    // if match expectation, clear buffer and return..
+    if (value.length === EXPECTED_ARRAY_SIZE) {
+      //this._log('array length matched. clearing temp array..');
+      this._array = new Uint8Array();
+      return new SerialRawValue(value.subarray(0));
+    }
+
+    //otherwise, append to array
+    this._array = SerialUtil.concatArray(this._array, value);
+    //this._log('added to array. length:', this._array.length);
+
+    //then read again (recursive)
+    return await this.readOnce();
   }
 
-  private async _locateHeader() {
-    let retryTime = 0;
-    /* Try to locate header bytes using loop */
 
-    while (retryTime < MAX_RETRY_TIME) {
-      /* We need at least two bytes to locate the header */
-      if (this._buffer.length >= 2) {
-        for (let i = 0; i < this._buffer.length - 1; i++) {
-          if (this._buffer[i] == PACKET_HEADER_BYTE && this._buffer[i + 1] == PACKET_HEADER_BYTE) {
-            /* Found the header, dump the bytes before header */
-            this._buffer = this._buffer.subarray(i);
-            return
-          }
-        }
-      }
-      /* Header not found yet */
-      retryTime++;
-      await this._readDataToBuffer();
+  async readMultiple(numberToRead: number = 10): Promise<SerialRawValue[]> {
+    const array: SerialRawValue[] = [];
+    while (array.length < numberToRead) {
+      // this._log('reading..')
+      const value = await this._read();
+      array.push(value);
     }
-    throw new Error('Unable to locate packet header');
+
+    return array;
   }
+
 
   async readOnce(): Promise<SerialRawValue> {
-    let retryTime = 0;
-    while (retryTime < MAX_RETRY_TIME) {
-      await this._locateHeader();
+    const value = await this._read();
 
-      /* Read a complete packet */
-      while (this._buffer.length < EXPECTED_PACKET_SIZE) {
-        await this._readDataToBuffer();
-      }
-
-      /* Validate Footer */
-      if (this._buffer[EXPECTED_PACKET_SIZE - 2] == PACKET_FOOTER_BYTE && this._buffer[EXPECTED_PACKET_SIZE - 1] == PACKET_FOOTER_BYTE) {
-        /* Extract the packet from buffer */
-        const value = new SerialRawValue(this._buffer.subarray(0, EXPECTED_PACKET_SIZE));
-        this._buffer = this._buffer.subarray(EXPECTED_PACKET_SIZE);
-        return value;
-      }
-
-      /* footer validation failed, we dump the header we found and restart the loop */
-      this._buffer = this._buffer.subarray(2);
-      retryTime++;
+    if (value) {
+      // this._log('readOnce', value.header2Bytes, value.footer2Bytes, value.rawValue.length, value.sensorTypeRaw);
     }
-
-    throw new Error('Failed to extract a packet due to protocol error');
+    return value;
   }
 
-  static concatArray(a: Uint8Array, b: Uint8Array): Uint8Array {
-    const c = new Uint8Array(a.length + b.length);
-    c.set(a, 0);
-    c.set(b, a.length);
-
-    return c;
-  }
 }
