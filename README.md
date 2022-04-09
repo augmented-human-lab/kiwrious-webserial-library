@@ -1,10 +1,11 @@
 # kiwrious-webserial-library
+Kiwrious web serial sdk features reading sensor data from kiwrious sensors. Mainly supported for web apps runs on chromium based web browers.
 
 ## Install
 `npm install kiwrious-webserial`
 
 ## Setup dependencies
-`Download all files from this link` [Sensor Decoder Resources](https://github.com/augmented-human-lab/kiwrious-webserial-library/kiwrious/js)
+`Download all files from this link` [Sensor Decoder Resources](https://github.com/augmented-human-lab/kiwrious-webserial-library/public/)
 `Place them inside your public folder / js`
 `link all js files`
 ```html
@@ -60,7 +61,10 @@ serialService.onSerialData = (decodedData: SensorReadResult) => {
 `onSerialData?: (data: SensorReadResult) => void;`
 
 * check connectivity
-`onSerialConnection?: (connect: boolean) => void;`
+`onSerialConnection?: (connected: boolean) => void;`
+
+* check for firmware update
+`onFirmwareUpdateAvailable?: (available: boolean) => void;`
 
 * connect and read
 `connectAndReadAsync(): Promise<void>;`
