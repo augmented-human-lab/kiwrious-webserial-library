@@ -4,9 +4,7 @@
     "description": "kiwrious sensor connector for web applications",
     "module": "lib",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "prepublish": "tsc npm pack",
-        "postpublish": "npm verison patch"
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
         "type": "git",
