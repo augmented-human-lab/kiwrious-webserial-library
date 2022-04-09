@@ -3,6 +3,18 @@
 ## Install
 `npm install kiwrious-webserial`
 
+## Setup dependencies
+`Download all files from this link` [Sensor Decoder Resources](https://github.com/augmented-human-lab/kiwrious-webserial-library/kiwrious/js)
+`Place them inside your public folder / js`
+`link all js files`
+```html
+<script type="text/javascript" src="js/libunicorn.out.js"></script>
+<script type="text/javascript" src="js/libelf-integers.js"></script>
+<script type="text/javascript" src="js/unicorn-wrapper.js"></script>
+<script type="text/javascript" src="js/unicorn-constants.js"></script>
+<script type="text/javascript" src="js/heartrate.js"></script>
+```
+
 ## Import
 ```typescript
 import serialService from 'kiwrious-webserial/lib/service/SerialService';
