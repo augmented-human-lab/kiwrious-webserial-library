@@ -1,7 +1,7 @@
-import {SensorDecodedValue} from "../data/SensorDecodedValue";
-import {SensorReadResult} from "../data/SensorReadResult";
-import {SerialDecoder} from "./SerialDecoder";
-import {SENSOR_VALUE, SerialRawValue} from "./SerialRawValue";
+import { SensorDecodedValue } from "../data/SensorDecodedValue";
+import { SensorReadResult } from "../data/SensorReadResult";
+import { SerialDecoder } from "./SerialDecoder";
+import { SENSOR_VALUE, SerialRawValue } from "./SerialRawValue";
 
 export const CONDUCTIVITY_RESULT_STATUS = {
   MAX: 'MAX',
@@ -27,7 +27,12 @@ export class ConductivitySerialDecoder extends SerialDecoder {
     console.log('|ConductivitySerialDecoder|', ...msg);
   }
 
-  decode(rawValue: SerialRawValue): SensorReadResult | null {
+  async decode(rawValues: SerialRawValue[]): Promise<SensorReadResult | null> {
+    if (!rawValues.length) {
+      throw new Error('invlalid input. expected 1 value at least')
+    }
+
+    const rawValue = rawValues[0];
 
     if (!rawValue.isValidLength) {
       this._log(`invalid length ${rawValue.rawValue.length}. skipping..`);
@@ -41,7 +46,7 @@ export class ConductivitySerialDecoder extends SerialDecoder {
 
 
 
-    const value0: SensorDecodedValue = {label: SENSOR_VALUE.CONDUCTIVITY, value: conductivity, type: "object"};
+    const value0: SensorDecodedValue = { label: SENSOR_VALUE.CONDUCTIVITY, value: conductivity, type: "object" };
 
     const result: SensorReadResult = {
       sensorType: rawValue.sensorType,

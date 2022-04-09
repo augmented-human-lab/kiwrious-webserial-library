@@ -8,17 +8,17 @@ const INPUT_ARRAY_SIZE = 2048;
 const RESULT_ARRAY_SIZE = 100;
 
 const SOS = [
-    [ [1.0000, 0, -1.0000], [1.0000, -1.9794, 0.9847]],
-    [ [1.0000, 0, -1.0000], [1.0000, -1.9948, 0.9953]],
-    [ [1.0000, 0, -1.0000], [1.0000, -1.9537, 0.9583]],
-    [ [1.0000, 0, -1.0000], [1.0000, -1.9849, 0.9855]],
-    [ [1.0000, 0, -1.0000], [1.0000, -1.9730, 0.9737]],
-    [ [1.0000, 0, -1.0000], [1.0000, -1.9392, 0.9426]],
-    [ [1.0000, 0, -1.0000], [1.0000, -1.9571, 0.9583]],
-    [ [1.0000, 0, -1.0000], [1.0000, -1.9410, 0.9432]]
+    [[1.0000, 0, -1.0000], [1.0000, -1.9794, 0.9847]],
+    [[1.0000, 0, -1.0000], [1.0000, -1.9948, 0.9953]],
+    [[1.0000, 0, -1.0000], [1.0000, -1.9537, 0.9583]],
+    [[1.0000, 0, -1.0000], [1.0000, -1.9849, 0.9855]],
+    [[1.0000, 0, -1.0000], [1.0000, -1.9730, 0.9737]],
+    [[1.0000, 0, -1.0000], [1.0000, -1.9392, 0.9426]],
+    [[1.0000, 0, -1.0000], [1.0000, -1.9571, 0.9583]],
+    [[1.0000, 0, -1.0000], [1.0000, -1.9410, 0.9432]]
 ];
 
-const GAIN =  [0.0256,     0.0256,     0.0254,     0.0254,     0.0252,     0.0252,     0.0251,     0.0251,     1.0000];
+const GAIN = [0.0256, 0.0256, 0.0254, 0.0254, 0.0252, 0.0252, 0.0251, 0.0251, 1.0000];
 
 export const HEART_RATE_RESULT_STATUS = {
     TOO_LOW: 'TOO_LOW',
@@ -60,7 +60,7 @@ class FixedArray {
     }
 
     private _cleanup() {
-        while(this._array.length > this._size) {
+        while (this._array.length > this._size) {
             const removed = this._array.shift();
             if (removed) {
                 this._sum -= removed;
@@ -155,7 +155,7 @@ export class HeartRateProcessor {
 
         this._initFilters();
 
-        const halfSampleRate = Math.floor(SAMPLE_RATE/2);
+        const halfSampleRate = Math.floor(SAMPLE_RATE / 2);
 
         this._resultArray = new FixedArray(RESULT_ARRAY_SIZE);
         this._inputArray = new FixedArray(INPUT_ARRAY_SIZE);
@@ -184,11 +184,11 @@ export class HeartRateProcessor {
         return HEART_RATE_RESULT_STATUS.PROCESSING;
     }
 
-    processSingleInput (input: number): HeartRateResult {
+    processSingleInput(input: number): HeartRateResult {
         const status = this.getStatusForInput(input);
         if (status !== HEART_RATE_RESULT_STATUS.PROCESSING) {
 
-            const result: HeartRateResult = {status};
+            const result: HeartRateResult = { status };
             return result;
         }
 
@@ -196,20 +196,20 @@ export class HeartRateProcessor {
         const output = this.process();
 
         if (!output) {
-            const result: HeartRateResult = {status: HEART_RATE_RESULT_STATUS.PROCESSING};
+            const result: HeartRateResult = { status: HEART_RATE_RESULT_STATUS.PROCESSING };
             return result;
         }
 
-        const result: HeartRateResult = {status: HEART_RATE_RESULT_STATUS.READY, value: output};
+        const result: HeartRateResult = { status: HEART_RATE_RESULT_STATUS.READY, value: output };
         return result;
     }
 
-    processMultiInput (inputArray: number[]): HeartRateResult {
+    processMultiInput(inputArray: number[]): HeartRateResult {
         for (const input of inputArray) {
             const status = this.getStatusForInput(input);
             if (status !== HEART_RATE_RESULT_STATUS.PROCESSING) {
 
-                const result: HeartRateResult = {status};
+                const result: HeartRateResult = { status };
                 return result;
             }
         }
@@ -218,15 +218,15 @@ export class HeartRateProcessor {
         const output = this.process();
 
         if (!output) {
-            const result: HeartRateResult = {status: HEART_RATE_RESULT_STATUS.PROCESSING};
+            const result: HeartRateResult = { status: HEART_RATE_RESULT_STATUS.PROCESSING };
             return result;
         }
 
-        const result: HeartRateResult = {status: HEART_RATE_RESULT_STATUS.READY, value: output};
+        const result: HeartRateResult = { status: HEART_RATE_RESULT_STATUS.READY, value: output };
         return result;
     }
 
-    process(): number|null {
+    process(): number | null {
         if (!this._inputArray.isAverageReady) {
             return null;
         }
@@ -237,15 +237,15 @@ export class HeartRateProcessor {
         }
 
         this._resultArray.add(heartRate);
-        if(!this._resultArray.isAverageReady) {
+        if (!this._resultArray.isAverageReady) {
             return null;
         }
 
-        return Math.round(this._resultArray.average);
+        return this._resultArray.average;
     }
 
     private _process(inputArray: FixedArray): number {
-        if(!inputArray.isAverageReady) {
+        if (!inputArray.isAverageReady) {
             throw new Error(`average is not ready. arr len: ${inputArray.array.length}`)
         }
 
@@ -263,7 +263,7 @@ export class HeartRateProcessor {
         let minVal = 0;
         let minIndex = 0;
 
-        for (let index = 0; index < mag.length/2; index++) {
+        for (let index = 0; index < mag.length / 2; index++) {
             const element = mag[index];
 
             if (element > minVal) {

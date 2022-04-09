@@ -11,10 +11,12 @@
         "declaration": true,
         "outDir": "lib",
         "strict": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "allowJs": true
     },
     "exclude": [
         "node_modules",
-        "lib"
+        "lib",
+        "public"
     ]
 }

@@ -17,17 +17,19 @@ export class SerialHeartRateDecoder extends SerialDecoder {
         console.log('|SerialHeartRateDecoder|', ...msg);
     }
 
-    decode(rawValue: SerialRawValue): SensorReadResult|null {
+    async decode(rawValues: SerialRawValue[]): Promise<SensorReadResult | null> {
+        if (!rawValues.length) {
+            throw new Error('invlalid input. expected 1 value at least')
+        }
+
+        const rawValue = rawValues[0];
 
         const data0 = rawValue.getFourBytesByIndex(6);
         const data1 = rawValue.getFourBytesByIndex(10);
         const data2 = rawValue.getFourBytesByIndex(14);
         const data3 = rawValue.getFourBytesByIndex(18);
 
-
-        const heartRateResult:HeartRateResult = this._processor.processMultiInput([data0, data1, data2, data3]);
-
-
+        const heartRateResult: HeartRateResult = this._processor.processMultiInput([data0, data1, data2, data3]);
 
         const value0: SensorDecodedValue = { label: SENSOR_VALUE.HEART_RATE, value: heartRateResult, type: "object" };
 
