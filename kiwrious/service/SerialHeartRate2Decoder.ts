@@ -14,6 +14,7 @@ export class SerialHeartRate2Decoder extends SerialDecoder {
     _detector: any;
 
     _thresholdChecker: MinValueThreshold = new MinValueThreshold();
+    _postProcessor: HeartRateValuePostProcessor = new HeartRateValuePostProcessor();
 
     constructor() {
         super();
@@ -58,16 +59,31 @@ export class SerialHeartRate2Decoder extends SerialDecoder {
         const rawData = SerialUtil.concatMultiArrays(subArrays);
         // this._log('rawData', rawData);
 
-
-
         if (isValid) {
             const heartRateResult = await this._detector.detectHeartRate(rawData);
             this._log('heartrate-result', heartRateResult);
 
-            value0.value = heartRateResult;
+            const postProcessedResult = this._postProcessor.process(heartRateResult);
+
+            value0.value = postProcessedResult;
         }
 
 
         return result;
+    }
+}
+
+class HeartRateValuePostProcessor {
+    _wasReady = false;
+
+    process(heartrateValue: any) {
+        // if the value is processing, but the previous one was "READY", consider this one ready to avoid temporary status change
+        if (heartrateValue.status === HEART_RATE_RESULT_STATUS.PROCESSING && this._wasReady) {
+            heartrateValue.status = HEART_RATE_RESULT_STATUS.READY;
+        }
+
+        this._wasReady = heartrateValue.status === HEART_RATE_RESULT_STATUS.READY;
+
+        return heartrateValue;
     }
 }
