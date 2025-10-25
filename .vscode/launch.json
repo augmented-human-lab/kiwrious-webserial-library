@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "NPM Deploy",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "npm version patch && npx tsc && npm pack && npm publish && (open https://www.npmjs.com/package/kiwrious-webserial || xdg-open https://www.npmjs.com/package/kiwrious-webserial || start https://www.npmjs.com/package/kiwrious-webserial)"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+            "name": "CDN Deploy",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/deploy.js",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+  ]
+}
