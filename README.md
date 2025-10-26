@@ -30,6 +30,13 @@ import {SensorReadResult} from "kiwrious-webserial/lib/data/SensorReadResult";
 import {SensorDecodedValue} from "kiwrious-webserial/lib/data/SensorDecodedValue";
 ```
 
+or fetch from CDN
+```typescript
+import serialService from 'https://stakcos.com/kiwrious/service/SerialService.js';
+import {SensorReadResult} from "https://stakcos.com/kiwrious/service/SensorReadResult.js";
+import {SensorDecodedValue} from "https://stakcos.com/kiwrious/service/SensorDecodedValue.js";
+```
+
 ## Use
 
 connect
